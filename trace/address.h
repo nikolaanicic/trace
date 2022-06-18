@@ -3,35 +3,9 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <stdbool.h>
-#include <WinSock2.h>
+#include "types.h"
 
 
-/// <summary>
-/// This enum represents the ip address version
-/// </summary>
-typedef enum {V4 = AF_INET,V6 = AF_INET6} FAMILY;
-
-/// <summary>
-/// This enum represents the validity of an ipv4 address
-/// </summary>
-typedef enum{ VALID_IP = 0, INVALID_IP = 1} IP_VALIDITY;
-
-/// <summary>
-/// Typename to represent a binary representation of a ipv4 address
-/// </summary>
-typedef unsigned long IPv4_BIN;
-
-
-/// <summary>
-/// Typename to represent a string representation of a ipv4 address
-/// </summary>
-typedef const char* IPv4_STRING;
-
-
-/// <summary>
-/// Typename to represent a hostname of a network machine
-/// </summary>
-typedef const char* HOSTNAME;
 
 
 /// <summary>
@@ -61,7 +35,8 @@ IPv4_BIN convert_to_binary_ipv4(IPv4_STRING ipv4);
 /// </summary>
 /// <param name="ipv4"></param>
 /// <returns></returns>
-IPv4_STRING convert_to_string_ipv4(const struct sockaddr_in* address);
+IPv4_STRING convert_to_string_ipv4(const struct sockaddr_in* address, FAMILY address_family);
+
 
 
 /// <summary>
@@ -74,9 +49,11 @@ void print_address_string(IPv4_STRING ipv4);
 
 /// <summary>
 /// This function gets .sin_addr field before printing the address
+/// 
 /// </summary>
-/// <param name="ipv4"></param>
-void print_address_struct(const struct sockaddr_in* ipv4, bool flip_port_byte_order);
+/// <param name="address">Pointer to the address struct</param>
+/// <param name="flip_port_byte_order">Parameter that determines whether the port bytes should be flipped, or if the port is in network bytes order</param>
+void print_address_struct(const struct sockaddr_in* address, BYTE_ORDER order,bool change_order);
 
 
 
@@ -90,10 +67,16 @@ SOCKADDR_IN* populate_address(FAMILY family, short port, IPv4_STRING address);
 
 
 
-
-
-
-
+/// <summary>
+/// This function parses the ipv4 address in string representation from international hostname standard
+/// Hostnames should consist of the following characters
+/// - upper and lower case ASCII letters from the english alphabet
+/// - digits from 0 and 9
+/// - ascii hyphen characters
+/// </summary>
+/// <param name="host"></param>
+/// <returns></returns>
+IPv4_STRING parse_from_hostname(HOSTNAME host);
 
 /// <summary>
 /// This function should be used by the caller of the populate_address()

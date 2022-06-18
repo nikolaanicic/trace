@@ -1,21 +1,26 @@
+
+
 #include <stdio.h>
 #include "address.h"
-
-
+#include "winsock_wrapper.h"
+#include <WS2tcpip.h>
 int main()
 {
-	IPv4_STRING ipv4 = "192.168.1.1";
-	short port = 3300;
-	ADDRESS_FAMILY family = V4;
 
-	SOCKADDR_IN* addr = populate_address(family, port, ipv4);
+	if (!winsock_startup())
+		return 1;
 
-	print_address_struct(addr, true);
+	
+	IPv4_STRING addr = parse_from_hostname("ftn.uns.ac.rs");
 
-	free_address(&addr);
+	printf("\n%s", addr);
+
 
 	printf("\nPress any key to exit...");
 	getchar();
+
+	winsock_cleanup();
+
 
 	return 0;
 }
