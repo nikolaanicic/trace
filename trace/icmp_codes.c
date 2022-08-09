@@ -1,6 +1,10 @@
 #include "icmp_codes.h"
 
 
+// Every field that is labeled unused should be zero when packing data in the packet
+// Each field should be included in the checksum 
+
+
 const char* destination_unreachable_codes[14] =
 {
 	"Destination network unreachable",
@@ -117,19 +121,19 @@ const char* get_code_meaning(int type, int code)
 	case 2:
 		retval = types_codes_meanings[2];
 		break;
-	case 3:
+	case 3: //destination unreachable 
 		retval = get_destination_unreachable(code);
 		break;
-	case 4:
+	case 4: //source quench
 		retval = source_quench_codes_meaning[0];
 		break;
-	case 5:
+	case 5: //redirect
 		retval = get_redirect_message(code);
 		break;
-	case 6:
+	case 6: //alternate host address
 		retval = alterante_address[0];
 		break;
-	case 7:
+	case 7: //unassigned
 		retval = "Reserved";
 		break;
 	default:

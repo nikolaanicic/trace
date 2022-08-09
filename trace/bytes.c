@@ -4,15 +4,7 @@
 
 char* get_buffer(int len)
 {
-	char* buffer = NULL;
-
-	if ((buffer = calloc(len, sizeof(char))) == NULL)
-	{
-		printf("\nFailed to allocate a buffer of length %d", len);
-		
-	}
-
-	return buffer;
+	return calloc(len, sizeof(char));
 }
 
 void change_order_ulong(u_long* value, BYTE_ORDER wanted_order)

@@ -33,6 +33,15 @@ IP_VALIDITY validate_ipv4_address(const char* ipv4)
 	return validate(ipv4);
 }
 
+bool is_ip_address(const char* address)
+{
+	for (char* p = address; p != '\0'; p++)
+	{
+		if (!isdigit(*p) && *p != '.') return false;
+	}
+	return true;
+}
+
 
 
 /// <summary>

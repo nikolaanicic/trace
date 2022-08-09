@@ -86,4 +86,12 @@ IPv4_STRING parse_from_hostname(HOSTNAME host);
 void free_address(SOCKADDR_IN** address);
 
 
+/// <summary>
+/// This function checks if the passed pointer points to something that should be an ip address
+/// </summary>
+/// <param name="address"></param>
+/// <returns></returns>
+bool is_ip_address(const char* address);
+
+
 #endif // ! _ADDRESS_RESOLVE_H_

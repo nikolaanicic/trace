@@ -30,6 +30,9 @@
     <ClCompile Include="bytes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="user_input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers.h">
