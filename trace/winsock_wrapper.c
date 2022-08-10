@@ -47,7 +47,7 @@ SOCKET get_raw_icmp_socket(const int* const ttl)
 	
 	if (sock == INVALID_SOCKET)
 	{
-		printf("\nFailed to create a socket...");
+		printf("\nFailed to create a socket with: %d error",WSAGetLastError());
 		return -1;
 	}
 	else if (setsockopt(sock, IPPROTO_IP, IP_TTL, (const char*)ttl, sizeof(int)) == INVALID_SOCKET)

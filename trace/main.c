@@ -37,13 +37,14 @@ int main(int argc,char** argv)
 	SOCKET sock = get_raw_icmp_socket(&ttl);
 	pack_ping_packet(icmp, packet_size, seq_no++);
 	double time1 = GetTickCount64();
+	clock_t t1 = clock();
 	send_ping_packet(sock, icmp, to_addr, packet_size);
-
-
 	receive_ping_reply(sock, &ip, from);
 	double time2 = GetTickCount64();
+	clock_t t2 = clock();
 
-	printf("\nElapsed:%lf ms", (time2 - time1));
+	printf("\nElapsed:%lf ms", ((double)t2 - (double)t1)/CLOCKS_PER_SEC);
+
 	printf("\nPress any key to exit...");
 	getchar();
 
