@@ -31,7 +31,6 @@
 
 const char* __flag_values__[30] = {
 	[chartoindex('a')] = "used to pass the ipv4 address",
-	[chartoindex('h')] = "used to pass the hostname",
 	[chartoindex('l')] = "used to pass ttl value"
 };
 
@@ -93,7 +92,7 @@ INPUT_VALUES* allocate_input_values()
 	INPUT_VALUES* vals = get_buffer(sizeof(INPUT_VALUES));
 	if (vals == NULL)
 	{
-		printf("\nFailed to allocate space for user input");
+		fprintf(stderr,"\n[FAILED TO ALLOCATE THE SPACE FOR THE USER INPUT]");
 		return NULL;
 	}
 	else if ((vals->address = get_buffer(32)) == NULL)

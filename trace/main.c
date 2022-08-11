@@ -5,57 +5,35 @@
 #include "winsock_wrapper.h"
 #include "user_input.h"
 #include <WS2tcpip.h>
-#include <time.h>
 
 int main(int argc,char** argv)
 {
+	winsock_startup();
 
 	INPUT_VALUES* user_input = read_user_input_stdin(argv, argc);
-
-	if (!winsock_startup())
-	{
-		exit(EXIT_FAILURE);
-
-	}
-
-	int packet_size = sizeof(IcmpHeader) + 32;
-	int seq_no = 0;
+	printf("\nTRACING ROUTE TO %s  [MAX %d HOPS]\n", user_input->address,user_input->ttl);
 
 	user_input->address = parse_from_hostname(user_input->address);
-
 	SOCKADDR_IN* to_addr = populate_address(AF_INET, 7, user_input->address);
-	SOCKADDR_IN* my_addr = populate_address(AF_INET, 7, "127.0.0.1");
-	SOCKADDR_IN* from = populate_address(AF_INET, 7, "127.0.0.1");
 
-	memset(from, 0, sizeof(SOCKADDR_IN));
+	SOCKET sock = get_raw_icmp_socket();
+	set_non_blocking_mode(sock);
 
+	double elapsed[3];
+	struct in_addr responder = { 0 };
+	for (int ttl = 1; ttl <= user_input->ttl && memcmp(&responder,&(to_addr->sin_addr),sizeof(struct in_addr)) != 0; ttl++)
+	{
+		set_socket_ttl(sock, &ttl);
+		ping(sock, to_addr, &responder);
+	}
 
-	IcmpHeader* icmp = alloc_icmp_header(32);
-	IpHeader* ip = alloc_ip_header();
-
-	int ttl = 1;
-	SOCKET sock = get_raw_icmp_socket(&ttl);
-	pack_ping_packet(icmp, packet_size, seq_no++);
-	double time1 = GetTickCount64();
-	clock_t t1 = clock();
-	send_ping_packet(sock, icmp, to_addr, packet_size);
-	receive_ping_reply(sock, &ip, from);
-	double time2 = GetTickCount64();
-	clock_t t2 = clock();
-
-	printf("\nElapsed:%lf ms", ((double)t2 - (double)t1)/CLOCKS_PER_SEC);
-
-	printf("\nPress any key to exit...");
+	printf("\nTrace complete");
 	getchar();
 
-	free_address(&my_addr);
 	free_address(&to_addr);
-	free_icmp_header(&icmp);
-	free_ip_header(&ip);
 	free_input_values(&user_input);
 
 	winsock_cleanup();
-
 
 	return 0;
 }

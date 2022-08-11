@@ -12,7 +12,7 @@ typedef enum { V4 = AF_INET, V6 = AF_INET6 } FAMILY;
 /// <summary>
 /// this type represents which conversion should take place network to host or host to network
 /// </summary>
-typedef enum {HTON= 0, NTOH } BYTE_ORDER;
+typedef enum { HTON= 0, NTOH } BYTE_ORDER;
 
 /// <summary>
 /// This enum represents the validity of an ipv4 address
