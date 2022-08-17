@@ -2,38 +2,25 @@
 #include <WinSock2.h>
 
 
+
+/// <summary>
+/// This function allocates memory on the heap in the size of the len param
+/// </summary>
+/// <param name="len">size of the memory to be allocated</param>
+/// <returns>pointer to the allocated memory or null if the space isn't available</returns>
 char* get_buffer(int len)
 {
 	return calloc(len, sizeof(char));
 }
 
-void change_order_ulong(u_long* value, BYTE_ORDER wanted_order)
-{
-	if (wanted_order == HTON)
-	{
-		*value = htonl(*value);
-	}
-	else if (wanted_order == NTOH)
-	{
-		*value = ntohl(*value);
-	}
-}
 
-
-void change_order_short(short* value, BYTE_ORDER wanted_order)
-{
-	if (wanted_order == HTON)
-	{
-		*value = htons(value);
-	}
-	else if (wanted_order == NTOH)
-	{
-		*value = ntohs(*value);
-	}
-}
-
-
-free_buffer(char** buffer)
+/// <summary>
+/// This function frees the memory on the heap 
+/// </summary>
+/// <param name="buffer">pointer to a pointer on the memory on heap
+/// double pointer is passed so the pointer itself could be set to NULL
+/// </param>
+void free_buffer(char** buffer)
 {
 	if (*buffer != NULL)
 	{

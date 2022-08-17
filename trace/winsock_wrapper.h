@@ -9,32 +9,33 @@
 
 
 /// <summary>
-/// This function initializes winsock2 lib with the 2.2 version
+/// This function initializes winsock lib with the 2.2 version
 /// </summary>
+/// <returns>true or false based on the WSAStartup() function return value</returns>
 bool winsock_startup();
 
 
 
 /// <summary>
-/// This function cleans up winsock libary
+/// This function cleans up winsock lib 
 /// </summary>
+/// <returns>true or false based on the WSACleanup() function call</returns>
 bool winsock_cleanup();
 
 
 /// <summary>
-/// This function returns a raw socket configured to send icmp messages if the 
-/// execution of the function is valid and -1 if something fails
+/// This function makes a raw icmp socket if there is one availabe
 /// </summary>
-/// <returns></returns>
+/// <returns>either a socket file descriptor or -1 if a socket couldn't be created</returns>
 SOCKET get_raw_icmp_socket();
 
 
 /// <summary>
-/// this function sets the ttl option on the socket
+/// This function sets the ttl option on the socket
 /// </summary>
-/// <param name="socket"></param>
+/// <param name="socket">socket descriptor on which the option should be set</param>
 /// <param name="ttl">time to live of the packets sent through this socket</param>
-/// <returns></returns>
+/// <returns>true or false based on the setsockopt() function call</returns>
 bool set_socket_ttl(SOCKET socket, const int* const ttl);
 
 /// <summary>
@@ -43,33 +44,19 @@ bool set_socket_ttl(SOCKET socket, const int* const ttl);
 /// </summary>
 /// <param name="socket">socket on which the ping is done</param>
 /// <param name="destination">the address to which the packets are sent</param>
-/// <param name="triple_ping_elapsed_times">out param in which the rtt of each packet will be written</param>
-/// <returns></returns>
+/// <returns>
+/// true or false based on successfullness of the ping, at least one packet should get a response
+/// for the return value to be true
+/// </returns>
 bool ping(SOCKET socket, const struct sockaddr_in* destination,struct in_addr* responder);
 
 
+
+/// <summary>
+/// This function sets the socket to he non blocking modes
+/// </summary>
+/// <param name="socket">identifier of the socket file descriptors</param>
+/// <returns>true or false based on the successfullness of the ioctlsocket() function call </returns>
 bool set_non_blocking_mode(SOCKET socket);
-
-/// <summary>
-/// This function allocates needed space for the icmp echo header and data
-/// </summary>
-/// <param name="data_size"></param>
-/// <returns></returns>
-IcmpHeader* alloc_icmp_header(int data_size);
-
-
-/// <summary>
-/// This function allocates space for the ip_header
-/// </summary>
-/// <returns></returns>
-IpHeader* alloc_ip_header();
-
-
-
-void free_icmp_header(IcmpHeader** icmp);
-
-void free_ip_header(IpHeader** ip);
-
-
 
 #endif

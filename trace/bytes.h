@@ -1,11 +1,22 @@
 #ifndef _BYTES_H_
 #define _BYTES_H_
-#include "types.h"
 
 
+/// <summary>
+/// This function allocates memory on the heap in the size of the len param
+/// </summary>
+/// <param name="len">size of the memory to be allocated</param>
+/// <returns>pointer to the allocated memory or null if the space isn't available</returns>
 char* get_buffer(int len);
-void change_order_ulong(u_long* value, BYTE_ORDER wanted_order);
-void change_order_short(short* value, BYTE_ORDER wanted_order);
-free_buffer(char** buffer);
+
+
+
+/// <summary>
+/// This function frees the memory on the heap 
+/// </summary>
+/// <param name="buffer">pointer to a pointer on the memory on heap
+/// double pointer is passed so the pointer itself could be set to NULL
+/// </param>
+void free_buffer(char** buffer);
 
 #endif

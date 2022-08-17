@@ -6,12 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "bytes.h"
+#include <stdbool.h>
 
-
-bool check_pton_result(int res)
-{
-	return res == 1;
-}
 
 /// <summary>
 /// This function validates an ipv4 address by calling inet_addr and observing the result
@@ -19,98 +15,27 @@ bool check_pton_result(int res)
 /// </summary>
 /// <param name="ipv4"></param>
 /// <returns>
-/// 0 if the address is valid
-/// 1 is the address is invalid
-/// 
+/// true if the address is valid
+/// false is the address is invalid
 /// </returns>
-IP_VALIDITY validate(IPv4_STRING address)
+bool validate(char* address)
 {
-	return inet_addr(address) != INADDR_NONE ? VALID_IP : INVALID_IP;
-}
-
-IP_VALIDITY validate_ipv4_address(const char* ipv4)
-{
-	return validate(ipv4);
-}
-
-bool is_ip_address(const char* address)
-{
-	for (char* p = address; p != '\0'; p++)
-	{
-		if (!isdigit(*p) && *p != '.') return false;
-	}
-	return true;
+	return inet_addr(address) != INADDR_NONE;
 }
 
 
 
 /// <summary>
-/// This function does the conversion of the ipv4 address
-/// from string representation to the binary representation [unsigned long type]
+/// This function converts from a valid string representation of IPv4 address
+/// To the unsigned long representation representation
 /// </summary>
 /// <param name="ipv4"></param>
-/// <returns></returns>
-IPv4_BIN convert_to_binary_ipv4(IPv4_STRING address)
+/// <returns>unsigned long number representing ipv4 address</returns>
+unsigned long convert_to_binary_ipv4(char* address)
 {
 	return inet_addr(address);
 }
 
-
-
-/// <summary>
-/// This function does the conversion from 
-/// </summary>
-/// <param name="ipv4"></param>
-/// <returns></returns>
-IPv4_STRING convert_to_string_ipv4(const struct sockaddr_in* address)
-{
-	return inet_ntoa(address->sin_addr);
-}
-
-
-
-
-/// <summary>
-/// This function prints the ipv4 address aligned to the left and taking 20 characters of screen space
-/// </summary>
-/// <param name="ipv4"></param>
-void print_address_string(IPv4_STRING ipv4)
-{
-	printf("\nIP_ADDRESS:%-20s", ipv4);
-}
-
-
-const char* decode_version(ADDRESS_FAMILY family)
-{
-	switch (family)
-	{
-		case V4:
-			return "IPv4";
-		case V6:
-			return "IPv6";
-	
-		default:
-			return "UNKNOWN";
-	}
-}
-/// <summary>
-/// This function assumess that the passed ipv4 parameter is a valid ipv4 address
-/// This function calls the ipv4 conversion function and prints the address to the screen
-/// </summary>
-/// <param name="ipv4"></param>
-void print_address_struct(const struct sockaddr_in* address, BYTE_ORDER order, bool change_order)
-{
-
-	IPv4_STRING add_str = convert_to_string_ipv4(address, order);
-	short port = address->sin_port; 
-	
-	if (change_order)
-		change_order_short(&port, order);
-	
-	print_address_string(convert_to_string_ipv4(address,address->sin_family));
-	printf("\nPORT:%d",port);
-	printf("\nVERSION:%-10s", decode_version(address->sin_family));
-}
 
 
 
@@ -119,44 +44,41 @@ void print_address_struct(const struct sockaddr_in* address, BYTE_ORDER order, b
 /// If the memory is available it returns a pointer to the address
 /// If the memory is not available it returns a NULL pointer
 /// </summary>
-/// <returns></returns>
+/// <returns>a pointer to the space allocated for the sockaddr_in struct or null </returns>
 SOCKADDR_IN* allocate_address()
 {
-	SOCKADDR_IN* address = malloc(sizeof(SOCKADDR_IN));
+	SOCKADDR_IN* address = calloc(1,sizeof(SOCKADDR_IN));
 	if (address == NULL)
 	{
 		printf("\nFailed to allocate the memory for Ipv4 Address struct");
 		return NULL;
 	}
 
-	ZeroMemory(address, sizeof(SOCKADDR_IN));
 	return address;
 }
 
 /// <summary>
 /// This function populates the address struct with passed address family, the ip address itself and port
-/// This function also flips the endianess of the port
+/// This function also flips the endianess of the port param
 /// </summary>
-/// <param name="family"></param>
-/// <param name="port"></param>
-/// <param name="address"></param>
-/// <returns></returns>
-
-SOCKADDR_IN* populate_address(FAMILY family, short port, IPv4_STRING address)
+/// <param name="port">port of the host appliation</param>
+/// <param name="address">dot sepaarated format of the ipv4 address</param>
+/// <returns>a pointer to a populated struct sockaddr_in</returns>
+SOCKADDR_IN* populate_address(short port, char* address)
 {
 	SOCKADDR_IN* address_struct = allocate_address();
 
 	if (address_struct == NULL)
 		return NULL;
-	else if (validate(address) != VALID_IP)
+	else if (!validate(address))
 	{
 		free_address(&address_struct);
 		return NULL;
 	}
 
-	address_struct->sin_family = family;
+	address_struct->sin_family = AF_INET;
 	address_struct->sin_port = htons(port);
-	address_struct->sin_addr.S_un.S_addr = convert_to_binary_ipv4(address, HTON);
+	address_struct->sin_addr.S_un.S_addr = convert_to_binary_ipv4(address);
 
 	return address_struct;
 }
@@ -165,11 +87,10 @@ SOCKADDR_IN* populate_address(FAMILY family, short port, IPv4_STRING address)
 /// <summary>
 /// This function populates the hints addrinfo struct, the hints are needed in getting the ip address of a hostname
 /// </summary>
-/// <param name="hints"></param>
-/// <param name="family"></param>
+/// <param name="hints">hints about the v4 addres to be populated</param>
 void populate_hints(struct addrinfo* hints)
 {
-	hints->ai_family = V4;
+	hints->ai_family = AF_INET;
 	hints->ai_socktype = SOCK_RAW;
 	hints->ai_protocol = IPPROTO_ICMP;
 }
@@ -183,7 +104,7 @@ void populate_hints(struct addrinfo* hints)
 /// <param name="hints">addrinfo struct that provides information on the socket capabilities of the caller</param>
 /// <param name="host">hostname that should be translated into an ip address</param>
 /// <param name="address">ip address buffer, can be NULL</param>
-bool get_host_ip(struct addrinfo* hints, HOSTNAME host,IPv4_STRING address)
+bool get_host_ip(struct addrinfo* hints, char* host,char* address)
 {
 
 	int res = 0;
@@ -216,12 +137,21 @@ bool get_host_ip(struct addrinfo* hints, HOSTNAME host,IPv4_STRING address)
 }
 
 
-IPv4_STRING parse_from_hostname(HOSTNAME host)
+/// <summary>
+/// This function parses the ipv4 address in string representation from international hostname standard
+/// Hostnames should consist of the following characters
+/// - upper and lower case ASCII letters from the english alphabet
+/// - digits from 0 and 9
+/// - ascii hyphen characters
+/// </summary>
+/// <param name="host">char pointer to a hostname to be converted to a dot separated format</param>
+/// <returns>v4 address in a dot separated format</returns>
+char* parse_from_hostname(char* host)
 {
 	if (host == NULL)
 		return NULL;
 
-	IPv4_STRING address = get_buffer(20);
+	char* address = get_buffer(20);
 	struct addrinfo hints = { 0 };
 
 	populate_hints(&hints);
@@ -232,7 +162,11 @@ IPv4_STRING parse_from_hostname(HOSTNAME host)
 	return address;
 }
 
-
+/// <summary>
+/// This function should be used by the caller of the populate_address()
+/// To free the memory allocated by the function call on the heap 
+/// </summary>
+/// <param name="address">pointer to a pointer to the memory on the heap in the size of the sockaddr_in struct</param>
 void free_address(SOCKADDR_IN** address)
 {
 	if ((*address) != NULL)

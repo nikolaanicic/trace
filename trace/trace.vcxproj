@@ -156,8 +156,6 @@
     <ClInclude Include="headers.h" />
     <ClInclude Include="icmp_codes.h" />
     <ClInclude Include="stopwatch.h" />
-    <ClInclude Include="trace.h" />
-    <ClInclude Include="types.h" />
     <ClInclude Include="user_input.h" />
     <ClInclude Include="winsock_wrapper.h" />
   </ItemGroup>

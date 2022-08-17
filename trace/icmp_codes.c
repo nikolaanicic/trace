@@ -73,7 +73,7 @@ const char* types_codes_meanings[41] =
 	"Echo Request",
 	"Router Advertisement",
 	"Router Solicitation",
-	"Time Exceeded",
+	"Time To Live Exceeded",
 	"Parameter Problem",
 	"Timestamp Request",
 	"Timestamp Reply",
@@ -106,6 +106,14 @@ const char* types_codes_meanings[41] =
 };
 
 
+
+
+/// <summary>
+/// This function decodes icmp messages based on the type and the code sent from the host
+/// </summary>
+/// <param name="type">icmp type</param>
+/// <param name="code">icmp code</param>
+/// <returns>const char pointer to the meaning of the code and the type of the icmp header</returns>
 const char* get_code_meaning(int type, int code)
 {
 	const char* retval = NULL;

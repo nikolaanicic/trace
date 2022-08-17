@@ -2,10 +2,8 @@
 #define _USER_INPUT_H_
 
 
-#include "types.h"
 #include <stdint.h>
 
-#define __DEFAULT_TTL__ (30)
 
 /// <summary>
 /// This structure represents user input
@@ -18,18 +16,18 @@
 typedef struct __user_input_values__
 {
 	uint8_t ttl;
-	IPv4_STRING address;
+	char* address;
 }INPUT_VALUES;
 
 
 
 
 /// <summary>
-/// this function reads user input values, user can pass either hostname or the ipv4 address to the program
-/// user can also pass the ttl time for the packets 
-/// this function allocates the space for the structure on the heap and with some private helper functions reads and formats user input
+/// This function takes the values passed to the program by the cli 
 /// </summary>
-/// <param name="address"></param>
+/// <param name="argv">pointer to the array of values passed when calling the progam</param>
+/// <param name="argc">number of values passed to the program</param>
+/// <returns>populated input_values struct with address or hostname and the ttl value either default or a user passed one </returns>
 INPUT_VALUES* read_user_input_stdin(const char** argv, int argc);
 
 
@@ -37,7 +35,7 @@ INPUT_VALUES* read_user_input_stdin(const char** argv, int argc);
 /// <summary>
 /// This function frees the space allocated for the user input structure
 /// </summary>
-/// <param name="values"></param>
+/// <param name="values">pointer to the pointer to the allocated memory on the heap for the user values struct</param>
 void free_input_values(INPUT_VALUES** values);
 
 
@@ -45,7 +43,7 @@ void free_input_values(INPUT_VALUES** values);
 /// <summary>
 /// This funtion prints user input values in a prettified manner
 /// </summary>
-/// <param name="vals"></param>
+/// <param name="vals">pointer to the INPUT_VALUES struct to be printed</param>
 void print_input_values(const INPUT_VALUES* const vals);
 
 #endif

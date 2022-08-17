@@ -28,9 +28,6 @@ typedef struct _icmp_echo_header_
 }EchoHeader;
 
 
-
-
-
 /// <summary>
 /// This structure describes the incomplete icmp header but these are the only fields needed for the project
 /// Timestamp field is added in 
@@ -43,7 +40,9 @@ typedef struct _icmp_header_
 }IcmpHeader;
 
 
-
+/// <summary>
+/// This structure represents the v4 ip header
+/// </summary>
 typedef struct __ip__header {
 	uint8_t length : 4;
 	uint8_t version : 4;

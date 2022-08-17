@@ -1,8 +1,3 @@
-/*
-	This unit is responsible for safely handling user input 
-	Only one exported function exists IPv4_STRING read_address_stdin() and it should return parsed ipv4 address
-
-*/
 #define _CRT_SECURE_NO_WARNINGS
 
 
@@ -15,7 +10,7 @@
 #include <string.h>
 
 
-
+#define __DEFAULT_TTL__ (30)
 #define MIN_PARAMS (3)
 #define MAX_PARAMS (5)
 
@@ -26,7 +21,7 @@
 #define array_len(arr)(sizeof(arr)/sizeof(arr[0]))
 
 
-// ./trace [-a|-h] [addr|hostname] [-l] [value]
+// ./trace a addr|hostname [l] [value]
 
 
 const char* __flag_values__[30] = {
@@ -41,7 +36,7 @@ const char __second_flag_set__[]	= { 'l', NULL };
 
 void __print_usage__()
 {
-	printf("USAGE:./trace a v4_addr [l] [ttl value]\n");
+	printf("USAGE: ./trace a v4_addr | hostname [l] [ttl value]\n");
 }
 
 
@@ -56,10 +51,7 @@ bool __exists_in_flag_set(char* flag,const char* flag_set)
 	return false;
 }
 
-bool __check_ipv4_address(const char* addr)
-{
-	return validate_ipv4_address(addr) == VALID_IP;
-}
+
 
 
 bool __check__input__(char** argv, int argc)
@@ -78,12 +70,7 @@ bool __check__input__(char** argv, int argc)
 void __populate__input_values(char** argv, int argc, INPUT_VALUES* vals)
 {
 	strcpy(vals->address, argv[2]);
-	vals->ttl = 30;
-
-	if (argc == MAX_PARAMS)
-	{
-		vals->ttl = atoi(argv[MAX_PARAMS - 1]);
-	}
+	vals->ttl = argc == MAX_PARAMS? atoi(argv[MAX_PARAMS - 1]) : __DEFAULT_TTL__;
 }
 
 

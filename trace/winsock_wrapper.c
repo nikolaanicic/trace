@@ -7,37 +7,80 @@
 #include "address.h"
 #include <stdio.h>
 #include "stopwatch.h"
+#include "icmp_codes.h"
 
-
-
+/// <summary>
+/// This define is for the random data in the icmp packet
+/// </summary>
 #define IKP (0xDDDD)
 
 
+/// <summary>
+/// This define is the default timeout (in seconds) used in the select function
+/// </summary>
+#define _DEFAULT_TIMEOUT_ (3)
+
+
+/// <summary>
+/// This variable is the global sequence number that will be used for the icmp packets
+/// </summary>
 static uint16_t sequence_number = 0;
+
+
+/// <summary>
+/// This variable is the timeout used in the select() function call
+/// </summary>
 static TIMEVAL _timeout;
+
+/// <summary>\
+/// This variable is the file descriptor set used in the select() function call to check if the socket is ready to be read from
+/// </summary>
 static fd_set read_set;
 
 
-void decode_response(const IpHeader* const buffer, const IcmpHeader* const icmp)
+
+/// <summary>
+/// This function allocates space for the ip_header
+/// </summary>
+/// <returns>either a pointer to the memory on the heap in the size of the IpHeader struct or null </returns>
+IpHeader* alloc_ip_header()
 {
-	struct in_addr source, destination;
-	source.S_un.S_addr = buffer->sourceIp;
-	destination.S_un.S_addr = buffer->destinationIp;
+	return get_buffer(sizeof(IpHeader));
 
-	printf("\nSource ip:%s", inet_ntoa(source));
-	printf("\nDestination ip:%s", inet_ntoa(destination));
-	printf("\nTotal length:%d", htons(buffer->totalLength));
-	printf("\nProtocol:%d", buffer->proto);
-	printf("\nTTL:%d", buffer->ttl);
-
-
-	printf("\n\nTYPE:%d", icmp->baseData.type);
-	printf("\nCODE:%d", icmp->baseData.code);
-	printf("\nCHECKSUM:%x", htons(icmp->baseData.checksum));
-	printf("\nSEQUENCE:%d", htons(icmp->echo.sequence));
-	printf("\nID:%d", htons(icmp->echo.id));
-	printf("\nTIMESTAMP:%u", htonl(icmp->timestamp));
 }
+
+
+/// <summary>
+/// This function frees the space on the heap that was allocated to the IcmpHeader struct
+/// </summary>
+/// <param name="icmp">pointer to the pointer to the memory on the heap</param>
+void free_icmp_header(IcmpHeader** icmp)
+{
+	free_buffer(icmp);
+}
+
+
+/// <summary>
+/// This function frees the space on the heap that was allocated to the IpHeader
+/// </summary>
+/// <param name="ip">pointer to the pointer to the memory on the heap</param>
+void free_ip_header(IpHeader** ip)
+{
+	free_buffer(ip);
+}
+
+
+
+/// <summary>
+/// This function allocates needed space for the icmp echo header and data
+/// </summary>
+/// <param name="data_size"></param>
+/// <returns>either a pointer to the memory on the heap in the size of the IcmpHeader struct or null </returns>
+IcmpHeader* alloc_icmp_header(int data_size)
+{
+	return get_buffer(sizeof(IcmpHeader) + data_size);
+}
+
 
 
 /// <summary>
@@ -74,7 +117,7 @@ bool receive_ping_reply(SOCKET socket, IpHeader* ip_header, IcmpHeader* icmp_hea
 /// <param name="socket">socket which will be used to send the packet</param>
 /// <param name="vals">icmp packet which will be sent</param>
 /// <param name="destination">destination to which the packet is going to be sent</param>
-/// <returns></returns>
+/// <returns>true or false based on the successfullness of the sendto() function call</returns>
 bool send_ping_packet(SOCKET socket, const IcmpHeader* vals, const struct sockaddr_in* destination, int packet_size)
 {
 	bool retval = false;
@@ -88,7 +131,10 @@ bool send_ping_packet(SOCKET socket, const IcmpHeader* vals, const struct sockad
 }
 
 
-
+/// <summary>
+/// This function initializes winsock lib with the 2.2 version
+/// </summary>
+/// <returns>true or false based on the WSAStartup() function return value</returns>
 bool winsock_startup()
 {
 	WSADATA wsaData;
@@ -99,14 +145,17 @@ bool winsock_startup()
 		fprintf(stderr,"\[WINSOCK FAILED TO INITIALIZE] [%d] [WINSOCK ERROR]", res);
 		retval = false;
 	}
-	_timeout.tv_sec = 3;
+	_timeout.tv_sec = _DEFAULT_TIMEOUT_;
 	memset(&read_set, 0, sizeof(fd_set));
 
 	return retval;
 }
 
 
-
+/// <summary>
+/// This function cleans up winsock lib 
+/// </summary>
+/// <returns>true or false based on the WSACleanup() function call</returns>
 bool winsock_cleanup()
 {
 	bool retval = true;
@@ -121,23 +170,29 @@ bool winsock_cleanup()
 }
 
 
+
+/// <summary>
+/// This function makes a raw icmp socket if there is one availabe
+/// </summary>
+/// <returns>either a socket file descriptor or -1 if a socket couldn't be created</returns>
 SOCKET get_raw_icmp_socket()
 {
 	SOCKET sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	if (sock == INVALID_SOCKET) fprintf(stderr,"\n[FAILED TO CREATE A SOCKET] [%d] [WINSOCK ERROR] ",WSAGetLastError());
-	
-	
-	return sock;
+	return sock == INVALID_SOCKET ? (fprintf(stderr, "\n[FAILED TO CREATE A SOCKET] [%d] [WINSOCK ERROR] ", WSAGetLastError()), sock) : sock;
 }
 
 
+
+/// <summary>
+/// This function sets the ttl option on the socket
+/// </summary>
+/// <param name="socket">socket descriptor on which the option should be set</param>
+/// <param name="ttl">time to live of the packets sent through this socket</param>
+/// <returns>true or false based on the setsockopt() function call</returns>
 bool set_socket_ttl(SOCKET socket, const int* const ttl)
 {
 	bool retval = setsockopt(socket, IPPROTO_IP, IP_TTL, (const char*)ttl, sizeof(int)) != INVALID_SOCKET;
-
-	if (!retval) fprintf(stderr, "\n[FAILED TO SET TTL ON THE SOCKET] [%d] [WINSOCK ERROR]", WSAGetLastError());
-	
-	return retval;
+	return !retval ? (fprintf(stderr, "\n[FAILED TO SET TTL ON THE SOCKET] [%d] [WINSOCK ERROR]", WSAGetLastError()), retval) : retval;
 }
 
 
@@ -146,38 +201,34 @@ bool set_socket_ttl(SOCKET socket, const int* const ttl)
 /// </summary>
 /// <param name="icmp_buffer">packed icmp packet on which the checksum will be calculated</param>
 /// <param name="size"></param>
-/// <returns></returns>
+/// <returns>unsigned short representing icmp checksum</returns>
 uint16_t icmp_checksum(uint16_t* icmp_buffer, int size)
 {
-
 	uint32_t checksum = 0;
 
-	while (size > 1)
+	while (size)
 	{
 		checksum += *icmp_buffer++;
 		size -= sizeof(uint16_t);
-	}
-
-	//ovo ne treba, izvrsice se u ciklusu i za neparan broj ako je uslov size > 0
-	if (size)
-	{
-		checksum += *(uint16_t*)icmp_buffer;
 	}
 
 	checksum = (checksum >> 16) + (checksum & 0xffff);
 	checksum += (checksum >> 16);
 
 	return (uint16_t)(~checksum);
-
 }
 
+
+/// <summary>
+/// This function sets the socket to he non blocking modes
+/// </summary>
+/// <param name="socket">identifier of the socket file descriptors</param>
+/// <returns>true or false based on the successfullness of the ioctlsocket() function call </returns>
 bool set_non_blocking_mode(SOCKET socket)
 {
 	u_long mode = 1;
 	bool retval = ioctlsocket(socket, FIONBIO, &mode) != SOCKET_ERROR;
-	if (!retval) fprintf(stderr, "\n[FAILED TO SET NON BLOCKING SOCKET MODE]");
-
-	return retval;
+	return !retval?(fprintf(stderr, "\n[FAILED TO SET NON BLOCKING SOCKET MODE]"),retval):retval;
 }
 
 
@@ -206,15 +257,30 @@ void pack_ping_packet(IcmpHeader* icmp_buffer, int packet_size)
 	icmp_buffer->baseData.checksum = icmp_checksum((uint16_t*)icmp_buffer, packet_size);
 }
 
+
+/// <summary>
+/// This function takes ip address from the ip header sent by a host responding to a ping
+/// </summary>
+/// <param name="header">pointer to the ipheader struct</param>
+/// <returns>in_addr struct of the ip address</returns>
 struct in_addr get_source_ip(const IpHeader* const header)
 {
 	struct in_addr source, destination;
 	source.S_un.S_addr = header->sourceIp;
-
 	return source;
 }
 
 
+/// <summary>
+/// This function does the triple ping send and receive, measures the time for each of the packets and stores the 
+/// times in the triple_ping_elapsed_times param
+/// </summary>
+/// <param name="socket">socket on which the ping is done</param>
+/// <param name="destination">the address to which the packets are sent</param>
+/// <returns>
+/// true or false based on successfullness of the ping, at least one packet should get a response
+/// for the return value to be true
+/// </returns>
 bool ping(SOCKET socket, const struct sockaddr_in* destination, struct in_addr* responder)
 {
 	bool retval = false;
@@ -252,7 +318,7 @@ bool ping(SOCKET socket, const struct sockaddr_in* destination, struct in_addr* 
 		}
 	}
 
-	if (ip->totalLength != 0)
+	if (ip->totalLength > 0)
 	{
 		struct in_addr _response_source_ip = get_source_ip(ip);
 		struct hostent* host = gethostbyaddr((const char*)&_response_source_ip, 4, AF_INET);
@@ -260,6 +326,7 @@ bool ping(SOCKET socket, const struct sockaddr_in* destination, struct in_addr* 
 
 		if (host) printf("\t%s  [%s]", host->h_name, inet_ntoa(_response_source_ip));
 		else printf("\t[%s]", inet_ntoa(_response_source_ip));
+		printf("\t%-s", get_code_meaning(receiving_icmp->baseData.type, receiving_icmp->baseData.code));
 	}
 	else printf("\tRequest timed out");
 
@@ -268,33 +335,4 @@ bool ping(SOCKET socket, const struct sockaddr_in* destination, struct in_addr* 
 	free_ip_header(&ip);
 
 	return retval;
-}
-
-
-
-
-
-
-
-
-IcmpHeader* alloc_icmp_header(int data_size)
-{
-	return get_buffer(sizeof(IcmpHeader) + data_size);
-}
-
-IpHeader* alloc_ip_header()
-{
-	return get_buffer(sizeof(IpHeader));
-
-}
-
-
-void free_icmp_header(IcmpHeader** icmp)
-{
-	free_buffer(icmp);
-}
-
-void free_ip_header(IpHeader** ip)
-{
-	free_buffer(ip);
 }
