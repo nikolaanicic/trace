@@ -13,14 +13,14 @@
 /// This function validates an ipv4 address by calling inet_addr and observing the result
 /// If the result is different from INADDR_NONE the address is a valid IPv4 address
 /// </summary>
-/// <param name="ipv4"></param>
+/// <param name="address">pointer to an ipv4 address in a dot separated format</param>
 /// <returns>
 /// true if the address is valid
 /// false is the address is invalid
 /// </returns>
 bool validate(char* address)
 {
-	return inet_addr(address) != INADDR_NONE;
+	return address != NULL && inet_addr(address) != INADDR_NONE;
 }
 
 
@@ -29,7 +29,7 @@ bool validate(char* address)
 /// This function converts from a valid string representation of IPv4 address
 /// To the unsigned long representation representation
 /// </summary>
-/// <param name="ipv4"></param>
+/// <param name="address">address is a pointer to an ipv4 address in a dot separated format</param>
 /// <returns>unsigned long number representing ipv4 address</returns>
 unsigned long convert_to_binary_ipv4(char* address)
 {
@@ -47,7 +47,7 @@ unsigned long convert_to_binary_ipv4(char* address)
 /// <returns>a pointer to the space allocated for the sockaddr_in struct or null </returns>
 SOCKADDR_IN* allocate_address()
 {
-	SOCKADDR_IN* address = calloc(1,sizeof(SOCKADDR_IN));
+	SOCKADDR_IN* address = get_buffer(sizeof(SOCKADDR_IN));
 	if (address == NULL)
 	{
 		printf("\nFailed to allocate the memory for Ipv4 Address struct");
@@ -66,6 +66,9 @@ SOCKADDR_IN* allocate_address()
 /// <returns>a pointer to a populated struct sockaddr_in</returns>
 SOCKADDR_IN* populate_address(short port, char* address)
 {
+	if(!address) return NULL;
+
+
 	SOCKADDR_IN* address_struct = allocate_address();
 
 	if (address_struct == NULL)
@@ -96,6 +99,18 @@ void populate_hints(struct addrinfo* hints)
 }
 
 
+/// <summary>
+/// This function resolves an ipv4 address to a hostname
+/// </summary>
+/// <param name="ip">constant pointer to a dot separated format of an ipv4 address</param>
+/// <returns>a pointer to a hostent struct populated with info about the host computer</returns>
+struct hostent* reverse_dns_lookup(const char* ip)
+{
+	return gethostbyaddr((const char*)ip, 4, AF_INET);
+}
+
+
+
 
 
 /// <summary>
@@ -104,14 +119,15 @@ void populate_hints(struct addrinfo* hints)
 /// <param name="hints">addrinfo struct that provides information on the socket capabilities of the caller</param>
 /// <param name="host">hostname that should be translated into an ip address</param>
 /// <param name="address">ip address buffer, can be NULL</param>
-bool get_host_ip(struct addrinfo* hints, char* host,char* address)
+bool get_host_ip(struct addrinfo* hints, char* host, char* address)
 {
+	if(!hints || !host || !address) return false;
 
 	int res = 0;
 	struct addrinfo* result = NULL, * temp = NULL;	
 	char* buffer = get_buffer(256);
 
-	if ((res = getaddrinfo(host, "80", hints, &result)) != 0)
+	if ((res = getaddrinfo(host, "7", hints, &result)) != 0)
 	{
 		printf("\nFailed to get the ip addresses for the hostname:%s", host);
 		printf("\nError:%ws", gai_strerror(result));
@@ -124,7 +140,7 @@ bool get_host_ip(struct addrinfo* hints, char* host,char* address)
 	if ((res = getnameinfo(temp->ai_addr, temp->ai_addrlen, buffer, 256, NULL, 0, NI_NUMERICHOST)) != 0)
 	{
 		printf("\nFailed to get the ip address:%ws", gai_strerror(res));
-		free_buffer(buffer);
+		free_buffer(&buffer);
 		freeaddrinfo(result);
 		return false;
 	}
@@ -148,8 +164,7 @@ bool get_host_ip(struct addrinfo* hints, char* host,char* address)
 /// <returns>v4 address in a dot separated format</returns>
 char* parse_from_hostname(char* host)
 {
-	if (host == NULL)
-		return NULL;
+	if (!host) return NULL;
 
 	char* address = get_buffer(20);
 	struct addrinfo hints = { 0 };
@@ -157,7 +172,7 @@ char* parse_from_hostname(char* host)
 	populate_hints(&hints);
 	if (!get_host_ip(&hints, host, address))
 	{
-		free_buffer(address);
+		free_buffer(&address);
 	}
 	return address;
 }
@@ -169,9 +184,5 @@ char* parse_from_hostname(char* host)
 /// <param name="address">pointer to a pointer to the memory on the heap in the size of the sockaddr_in struct</param>
 void free_address(SOCKADDR_IN** address)
 {
-	if ((*address) != NULL)
-	{
-		free(*address);
-		*address = NULL;
-	}
+	free_buffer(address);
 }

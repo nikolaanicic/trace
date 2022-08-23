@@ -1,6 +1,9 @@
 #ifndef _USER_INPUT_H_
 #define _USER_INPUT_H_
 
+/*
+	This header file contains function prototypes that are based tha around the task of working with user input 
+*/
 
 #include <stdint.h>
 
@@ -9,17 +12,13 @@
 /// This structure represents user input
 /// User can input either ipv4 address or the hostname which should be resolved through a dns query
 /// <ttl> - field that says how long a packet should live when sent 
-/// <address> - ipv4 address that the user passed to the program
-/// <hostname> - hostname that the user passed to the program
-/// <populated> - field which says which part of the union is populated either. can be either 'a' or 'h'
+/// <address> - value passed by the user, either an ipv4 address or the hostname 
 /// </summary>
 typedef struct __user_input_values__
 {
 	uint8_t ttl;
 	char* address;
 }INPUT_VALUES;
-
-
 
 
 /// <summary>
@@ -41,7 +40,7 @@ void free_input_values(INPUT_VALUES** values);
 
 
 /// <summary>
-/// This funtion prints user input values in a prettified manner
+/// This funtion prints user input values in a prettified format
 /// </summary>
 /// <param name="vals">pointer to the INPUT_VALUES struct to be printed</param>
 void print_input_values(const INPUT_VALUES* const vals);

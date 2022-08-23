@@ -1,5 +1,13 @@
+
+
 #ifndef _BYTES_H_
 #define _BYTES_H_
+
+
+/*
+	This header file contains the functions for allocating and freeing memory
+*/
+
 
 
 /// <summary>

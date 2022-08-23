@@ -10,38 +10,58 @@
 #include <string.h>
 
 
+/// <summary>
+/// This define represents the default ttl value that will be inserted to the INPUT_VALUES struct if the user doesn't pass a value
+/// </summary>
 #define __DEFAULT_TTL__ (30)
+
+/// <summary>
+/// This define represents the minimum number of parameters that the user must pass for the program to execute
+/// </summary>
 #define MIN_PARAMS (3)
+
+/// <summary>
+/// This define represents the maximum number of parameters that the user can pass to the program
+/// </summary>
 #define MAX_PARAMS (5)
 
-// this macro is used to convert the ascii char to the index in the flags array
-#define chartoindex(letter)(letter - '0' - 32)
-
-//this macro is used to determine the length of the passed array
-#define array_len(arr)(sizeof(arr)/sizeof(arr[0]))
 
 
+// USAGE:
 // ./trace a addr|hostname [l] [value]
 
+/// <summary>
+/// This is the flag set for the first position
+/// </summary>
+const char __first_flag_set__ []	= { 'a', NULL };
 
-const char* __flag_values__[30] = {
-	[chartoindex('a')] = "used to pass the ipv4 address",
-	[chartoindex('l')] = "used to pass ttl value"
-};
-
-
-const char __first_flag_set__ []	= { 'a', NULL};
+/// <summary>
+/// This is the flag set for the second flag position
+/// </summary>
 const char __second_flag_set__[]	= { 'l', NULL };
 
 
+
+/// <summary>
+/// This function prints how the program should be called from the terminal
+/// </summary>
 void __print_usage__()
 {
 	printf("USAGE: ./trace a v4_addr | hostname [l] [ttl value]\n");
 }
 
 
+
+/// <summary>
+/// This function checks if the flag user used is allowd and if it is in the correct position
+/// </summary>
+/// <param name="flag">a flag used by the user</param>
+/// <param name="flag_set">flag set based on the position of the read value from the input</param>
+/// <returns>true if the flag is contained in the flag set, false othwerwise</returns>
 bool __exists_in_flag_set(char* flag,const char* flag_set)
 {
+	if(!flag || !flag_set) return false;
+
 	const char* f = &(flag_set[0]);
 
 	while (f != NULL && strcmp(f,"") != 0)
@@ -53,7 +73,13 @@ bool __exists_in_flag_set(char* flag,const char* flag_set)
 
 
 
-
+/// <summary>
+/// This function checks the values passed by the user based on the set of rules
+/// Rules can be deduced by the calling convetion mentioned above
+/// </summary>
+/// <param name="argv">list of values passed by the user</param>
+/// <param name="argc">number of values passed by the user</param>
+/// <returns>true if the input is valid false otherwise</returns>
 bool __check__input__(char** argv, int argc)
 {
 	if (argc < MIN_PARAMS || argc > MAX_PARAMS ||
@@ -67,6 +93,12 @@ bool __check__input__(char** argv, int argc)
 	return true;
 }
 
+/// <summary>
+/// This function populates INPUT_VALUES struct with the values passed to the program by the cli
+/// </summary>
+/// <param name="argv">pointer to the list of values passed by the user through the cli</param>
+/// <param name="argc">number of passed values</param>
+/// <param name="vals">pointer to the INPUT_VALUES struct to be populated</param>
 void __populate__input_values(char** argv, int argc, INPUT_VALUES* vals)
 {
 	strcpy(vals->address, argv[2]);
@@ -74,6 +106,10 @@ void __populate__input_values(char** argv, int argc, INPUT_VALUES* vals)
 }
 
 
+/// <summary>
+/// This function allocates space on the heap needed for the INPUT_VALUES struct
+/// </summary>
+/// <returns>pointer to the allocated space on the heap or null if the allocation didn't succeed</returns>
 INPUT_VALUES* allocate_input_values()
 {
 	INPUT_VALUES* vals = get_buffer(sizeof(INPUT_VALUES));
@@ -91,11 +127,19 @@ INPUT_VALUES* allocate_input_values()
 }
 
 
+
+/// <summary>
+/// This function takes the values passed to the program by the cli 
+/// </summary>
+/// <param name="argv">pointer to the array of values passed when calling the progam</param>
+/// <param name="argc">number of values passed to the program</param>
+/// <returns>populated input_values struct with address or hostname and the ttl value either default or a user passed one </returns>
 INPUT_VALUES* read_user_input_stdin(const char** argv, int argc)
 {
 	INPUT_VALUES* vals = NULL;
 	if ((vals = allocate_input_values()) == NULL || (!__check__input__(argv,argc)))
 	{
+		free_input_values(&vals);
 		exit(EXIT_FAILURE);
 	}
 
@@ -104,16 +148,26 @@ INPUT_VALUES* read_user_input_stdin(const char** argv, int argc)
 	return vals;
 }
 
+
+/// <summary>
+/// This function frees the space allocated for the user input structure
+/// </summary>
+/// <param name="values">pointer to the pointer to the allocated memory on the heap for the user values struct</param>
 void free_input_values(INPUT_VALUES** values)
 {
+	if(*values != NULL) free_buffer(&(*values)->address);
 	free_buffer(values);
 }
 
 
+
+/// <summary>
+/// This funtion prints user input values in a prettified manner
+/// </summary>
+/// <param name="vals">pointer to the INPUT_VALUES struct to be printed</param>
 void print_input_values(const INPUT_VALUES* const vals)
 {
-	if (vals == NULL)
-		return;
+	if (vals == NULL) return;
 
 	printf("\nADDRESS:%s", vals->address);
 	printf("\nTTL:%d", vals->ttl);

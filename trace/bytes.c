@@ -10,6 +10,8 @@
 /// <returns>pointer to the allocated memory or null if the space isn't available</returns>
 char* get_buffer(int len)
 {
+	if(len <= 0) return NULL;
+	
 	return calloc(len, sizeof(char));
 }
 

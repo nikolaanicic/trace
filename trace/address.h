@@ -1,6 +1,20 @@
+
+
+
 #ifndef  _ADDRESS_RESOLVE_H_
 #define  _ADDRESS_RESOLVE_H_
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+
+/*
+	This header file represents the part of the implementation that works with addresses and hostnames.
+	It contains functions that convert dot separated format of the address to binary, populate SOCKADDR_IN struct,
+	parse ipv4 address from hostname and one that frees the space allocated for SOCKADDR_IN struct on the heap memory
+*/
+
+
+
+
 
 #include <WinSock2.h>
 
@@ -8,7 +22,7 @@
 /// This function converts from a valid string representation of IPv4 address
 /// To the unsigned long representation representation
 /// </summary>
-/// <param name="ipv4"></param>
+/// <param name="ipv4">pointer to memory that represents the ipv4 address in a dot separated format</param>
 /// <returns>unsigned long number representing ipv4 address</returns>
 unsigned long convert_to_binary_ipv4(char* ipv4);
 
@@ -38,6 +52,13 @@ SOCKADDR_IN* populate_address(short port, char* address);
 char* parse_from_hostname(char* host);
 
 
+
+/// <summary>
+/// This function resolves an ipv4 address to a hostname
+/// </summary>
+/// <param name="ip">constant pointer to a dot separated format of an ipv4 address</param>
+/// <returns>a pointer to a hostent struct populated with info about the host computer</returns>
+struct hostent* reverse_dns_lookup(const char* ip);
 
 /// <summary>
 /// This function should be used by the caller of the populate_address()

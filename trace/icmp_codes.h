@@ -1,5 +1,15 @@
+
+
 #ifndef _icmp_codes_include_
 #define _icmp_codes_include_
+
+
+/*
+	This header contains a function prototype that is in charge of resolving icmp message
+	relying on the code and type of the message
+*/
+
+
 
 
 #include <stdio.h>

@@ -1,4 +1,11 @@
-#pragma once
+#ifndef _STOPWATCH_INCLUDE_
+#define _STOPWATCH_INCLUDE_
+
+/*
+
+	This header file contains function prototypes for a basic stopwatch functionality, stop(), start(), get()
+*/
+
 
 #include <time.h>
 
@@ -16,6 +23,8 @@ void stop_stopwatch();
 
 
 /// <summary>
-/// This function gets the time elapsed between the last start and the last stop in the stopwatch
+/// This function gets the time elapsed between the last start and the last stop of the stopwatch
 /// </summary>
 double get_elapsed_ms();
+
+#endif

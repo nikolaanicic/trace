@@ -25,10 +25,7 @@ const char* destination_unreachable_codes[14] =
 
 const char* get_destination_unreachable(int code)
 {
-	if (code < 14)
-		return destination_unreachable_codes[code];
-
-	return NULL;
+	return code < 14 ? destination_unreachable_codes[code] : NULL;
 }
 
 
@@ -49,9 +46,7 @@ const char* redirect_message_codes_meanings[4] =
 
 const char* get_redirect_message(int code)
 {
-	if (code < 4)
-		return redirect_message_codes_meanings[code];
-	return NULL;
+	return code < 4 ? redirect_message_codes_meanings[code] : NULL;
 }
 
 const char* alterante_address[1] =
