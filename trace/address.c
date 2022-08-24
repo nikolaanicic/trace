@@ -20,7 +20,7 @@
 /// </returns>
 bool validate(char* address)
 {
-	return address != NULL && inet_addr(address) != INADDR_NONE;
+	return address != NULL && (inet_addr(address) != INADDR_NONE || validate(parse_from_hostname(address)));
 }
 
 
@@ -129,8 +129,6 @@ bool get_host_ip(struct addrinfo* hints, char* host, char* address)
 
 	if ((res = getaddrinfo(host, "7", hints, &result)) != 0)
 	{
-		printf("\nFailed to get the ip addresses for the hostname:%s", host);
-		printf("\nError:%ws", gai_strerror(result));
 		free_buffer(buffer);
 		return false;
 	}
@@ -139,7 +137,6 @@ bool get_host_ip(struct addrinfo* hints, char* host, char* address)
 
 	if ((res = getnameinfo(temp->ai_addr, temp->ai_addrlen, buffer, 256, NULL, 0, NI_NUMERICHOST)) != 0)
 	{
-		printf("\nFailed to get the ip address:%ws", gai_strerror(res));
 		free_buffer(&buffer);
 		freeaddrinfo(result);
 		return false;

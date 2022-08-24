@@ -99,7 +99,7 @@ bool __check__input__(char** argv, int argc)
 {
 	if (argc < MIN_PARAMS || argc > MAX_PARAMS ||
 		!(__exists_in_flag_set(argv[1], __first_flag_set__)) ||
-		(argc == MAX_PARAMS && (!__exists_in_flag_set(argv[3], __second_flag_set__) || !__check_is_number(argv[MAX_PARAMS - 1]))))
+		(argc == MAX_PARAMS && (!__exists_in_flag_set(argv[3], __second_flag_set__) || !__check_is_number(argv[MAX_PARAMS - 1]))) || !validate(argv[2]))
 	{
 		__print_usage__();
 		return false;

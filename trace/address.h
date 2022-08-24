@@ -19,6 +19,19 @@
 #include <WinSock2.h>
 #include <stdbool.h>
 
+
+/// <summary>
+/// This function validates an ipv4 address by calling inet_addr and observing the result
+/// If the result is different from INADDR_NONE the address is a valid IPv4 address
+/// </summary>
+/// <param name="address">pointer to an ipv4 address in a dot separated format</param>
+/// <returns>
+/// true if the address is valid
+/// false is the address is invalid
+/// </returns>
+bool validate(char* address);
+
+
 /// <summary>
 /// This function converts from a valid string representation of IPv4 address
 /// To the unsigned long representation representation
