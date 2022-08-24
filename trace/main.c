@@ -25,11 +25,12 @@ int main(int argc,char** argv)
 	}
 
 	printf("\nTrace complete");
-	getchar();
 	free_address(&destination);
 	free_input_values(&user_input);
 
 	winsock_cleanup();
+
+	//getchar();
 
 	return 0;
 }
