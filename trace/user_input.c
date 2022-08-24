@@ -47,7 +47,7 @@ const char __second_flag_set__[]	= { 'l', NULL };
 /// </summary>
 void __print_usage__()
 {
-	printf("USAGE: ./trace a v4_addr | hostname [l] [ttl value]\n");
+	printf("USAGE: ./trace a v4_addr | hostname [l] [1, 255]\n");
 }
 
 
@@ -72,6 +72,21 @@ bool __exists_in_flag_set(char* flag,const char* flag_set)
 }
 
 
+/// <summary>
+/// This function checks if the passed ttl value is valid
+/// </summary>
+/// <param name="ttl_input">pointer to a string that was passed as a ttl value</param>
+/// <returns>true if all characters in ttl_input are digits false otherwise</returns>
+bool __check_is_number(char* ttl_input)
+{
+	while (*ttl_input != '\0')
+	{
+		if (!isdigit(*ttl_input++)) 
+			return false;
+	}
+	return true;
+}
+
 
 /// <summary>
 /// This function checks the values passed by the user based on the set of rules
@@ -84,7 +99,7 @@ bool __check__input__(char** argv, int argc)
 {
 	if (argc < MIN_PARAMS || argc > MAX_PARAMS ||
 		!(__exists_in_flag_set(argv[1], __first_flag_set__)) ||
-		(argc == MAX_PARAMS && !(__exists_in_flag_set(argv[3], __second_flag_set__))))
+		(argc == MAX_PARAMS && (!__exists_in_flag_set(argv[3], __second_flag_set__) || !__check_is_number(argv[MAX_PARAMS - 1]))))
 	{
 		__print_usage__();
 		return false;
@@ -102,7 +117,8 @@ bool __check__input__(char** argv, int argc)
 void __populate__input_values(char** argv, int argc, INPUT_VALUES* vals)
 {
 	strcpy(vals->address, argv[2]);
-	vals->ttl = argc == MAX_PARAMS? atoi(argv[MAX_PARAMS - 1]) : __DEFAULT_TTL__;
+	int ttl = argc == MAX_PARAMS ? atoi(argv[MAX_PARAMS - 1]) : __DEFAULT_TTL__;
+	vals->ttl = (ttl < 1 || ttl > 255) ? __DEFAULT_TTL__ : ttl;
 }
 
 

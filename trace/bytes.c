@@ -6,7 +6,7 @@
 /// <summary>
 /// This function allocates memory on the heap in the size of the len param
 /// </summary>
-/// <param name="len">size of the memory to be allocated</param>
+/// <param name="len">size of the memory block to be allocated</param>
 /// <returns>pointer to the allocated memory or null if the space isn't available</returns>
 char* get_buffer(int len)
 {

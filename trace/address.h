@@ -17,6 +17,7 @@
 
 
 #include <WinSock2.h>
+#include <stdbool.h>
 
 /// <summary>
 /// This function converts from a valid string representation of IPv4 address
@@ -66,5 +67,14 @@ struct hostent* reverse_dns_lookup(const char* ip);
 /// </summary>
 /// <param name="address">pointer to a pointer to the memory on the heap in the size of the sockaddr_in struct</param>
 void free_address(SOCKADDR_IN** address);
+
+
+/// <summary>
+/// This function compares two ipv4 addressees in a on wire format
+/// </summary>
+/// <param name="addr1">pointer to the first address to be compared</param>
+/// <param name="addr2">pointer to the second address to be compared</param>
+/// <returns></returns>
+bool is_same_addr(const struct in_addr* const addr1, const struct in_addr* const addr2);
 
 #endif // ! _ADDRESS_RESOLVE_H_

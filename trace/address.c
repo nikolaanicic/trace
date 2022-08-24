@@ -186,3 +186,15 @@ void free_address(SOCKADDR_IN** address)
 {
 	free_buffer(address);
 }
+
+
+/// <summary>
+/// This function compares two ipv4 addressees in a on wire format
+/// </summary>
+/// <param name="addr1">pointer to the first address to be compared</param>
+/// <param name="addr2">pointer to the second address to be compared</param>
+/// <returns></returns>
+bool is_same_addr(const struct in_addr* const addr1, const struct in_addr* const addr2)
+{
+	return memcmp(addr1, addr2, sizeof(struct in_addr)) == 0;
+}
