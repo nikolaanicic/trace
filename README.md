@@ -8,7 +8,7 @@ your data packets.
 
 About the Project
 
-Our "Trace" project is a testament to our dedication to improving network diagnostics and understanding the complex routes that data packets take across the Internet. We built this traceroute implementation from the ground up, using C for its performance and efficiency.
+This "Trace" project is a testament to my learning about network diagnostics and understanding the complex routes that data packets take across the Internet. I built this traceroute implementation from the ground up, using C for its performance and efficiency.
 Key Features
 
     Pure C Implementation: This traceroute implementation is coded in pure C, making it fast, lightweight, and highly efficient.
